@@ -8,7 +8,7 @@ import java.net.URL
 object ApiClient {
     // For a phone testing against a PC on the same Wi‑Fi, replace with the PC LAN IP.
     // Example: http://192.168.1.10:3000
-    var baseUrl = "http://10.0.2.2:3000"
+    var baseUrl = "var baseUrl = "http://127.0.0.1:3000"
     var token: String? = null
     var currentUser: ApiUser? = null
 
