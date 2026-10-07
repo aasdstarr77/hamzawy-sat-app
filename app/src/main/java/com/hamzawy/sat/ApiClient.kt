@@ -6,9 +6,9 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object ApiClient {
-    // For a phone testing against a PC on the same Wi‑Fi, replace with the PC LAN IP.
+    // For a phone testing against a PC on the same Wi-Fi, replace with the PC LAN IP.
     // Example: http://192.168.1.10:3000
-    var baseUrl = "var baseUrl = "http://127.0.0.1:3000"
+    var baseUrl = "http://127.0.0.1:3000"
     var token: String? = null
     var currentUser: ApiUser? = null
 
@@ -79,7 +79,6 @@ object ApiClient {
         )))
         return (gson.fromJson(json, Map::class.java)["order_id"] as Number).toInt()
     }
-
 
     fun createGuestOrder(serviceId: Int, name: String, phone: String, area: String, address: String, problem: String): Int {
         val oldToken = token
