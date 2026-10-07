@@ -783,10 +783,10 @@ fun TechnicianHome(
                 }
             }
 
-            message?.let { msg ->
+            if (message != null) {
                 item {
                     Text(
-                        msg,
+                        message!!,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -893,7 +893,8 @@ fun TechnicianHome(
         }
     }
 
-    selectedOrder?.let { order ->
+    if (selectedOrder != null) {
+        val order = selectedOrder!!
 
         AlertDialog(
             onDismissRequest = {
