@@ -876,14 +876,6 @@ fun TechnicianHome(
                             )
 
                             Text(
-                                "الخدمة: ${o.service}"
-                            )
-
-                            Text(
-                                "المنطقة: ${o.area ?: "-"}"
-                            )
-
-                            Text(
                                 "السعر المتفق عليه: ${o.customer_price.toInt()} جنيه"
                             )
                         }
@@ -893,102 +885,65 @@ fun TechnicianHome(
         }
     }
 
-    if (selectedOrder != null) {
-        val order = selectedOrder!!
-
-        AlertDialog(
-            onDismissRequest = {
-                selectedOrder = null
-            },
-
-            title = {
-                Text("تنبيه مهم")
-            },
-
-            text = {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-
-                    Text(
-                        "برجاء التأكد من تفاصيل الطلب وسعر الخدمة والخصم قبل فتح الطلب."
-                    )
-
-                    Text(
-                        "بمجرد الضغط على «فتح الطلب وخصم الرصيد» وخصم الرصيد، لا يجوز طلب استرداد أو رد قيمة الخصم.",
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        Checkbox(
-                            checked = agree,
-                            onCheckedChange = {
-                                agree = it
-                            }
-                        )
-
-                        Text(
-                            "أوافق على خصم قيمة فتح الطلب ولا أطلب استردادها."
-                        )
-                    }
-                }
-            },
-
-            confirmButton = {
-
-                Button(
-                    enabled = agree,
-                    onClick = {
-
-                        scope.launch {
-
-                            try {
-
-                                val result = withContext(Dispatchers.IO) {
-                                    ApiClient.openOrder(order.id)
-                                }
-
-                                opened = result
-
-                                balance = withContext(Dispatchers.IO) {
-                                    ApiClient.balance()
-                                }
-
-                                orders = withContext(Dispatchers.IO) {
-                                    ApiClient.technicianOrders()
-                                }
-
-                                selectedOrder = null
-
-                                message = "تم فتح الطلب وخصم الرصيد بنجاح."
-
-                            } catch (e: Exception) {
-
-                                message =
-                                    e.message ?: "تعذر فتح الطلب."
-                            }
+    val currentOrder = selectedOrder
+    if (currentOrder != null) {
+        TechnicianOrderConfirmDialog(
+            order = currentOrder,
+            agree = agree,
+            onAgreeChange = { agree = it },
+            onDismiss = { selectedOrder = null },
+            onOpen = {
+                scope.launch {
+                    try {
+                        val result = withContext(Dispatchers.IO) {
+                            ApiClient.openOrder(currentOrder.id)
                         }
-                    }
-                ) {
-                    Text(
-                        "فتح الطلب وخصم ${(order.technician_fee ?: 0.0).toInt()} جنيه"
-                    )
-                }
-            },
-
-            dismissButton = {
-
-                TextButton(
-                    onClick = {
+                        opened = result
+                        balance = withContext(Dispatchers.IO) { ApiClient.balance() }
+                        orders = withContext(Dispatchers.IO) { ApiClient.technicianOrders() }
                         selectedOrder = null
+                        message = "تم فتح الطلب وخصم الرصيد بنجاح."
+                    } catch (e: Exception) {
+                        message = e.message ?: "تعذر فتح الطلب."
                     }
-                ) {
-                    Text("إلغاء")
                 }
             }
         )
     }
+}
+
+
+@Composable
+private fun TechnicianOrderConfirmDialog(
+    order: ApiClient.OrderDto,
+    agree: Boolean,
+    onAgreeChange: (Boolean) -> Unit,
+    onDismiss: () -> Unit,
+    onOpen: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("تنبيه مهم") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("برجاء التأكد من تفاصيل الطلب وسعر الخدمة والخصم قبل فتح الطلب.")
+                Text(
+                    "بمجرد الضغط على «فتح الطلب وخصم الرصيد» وخصم الرصيد، لا يجوز طلب استرداد أو رد قيمة الخصم.",
+                    fontWeight = FontWeight.Bold
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = agree, onCheckedChange = onAgreeChange)
+                    Text("أوافق على خصم قيمة فتح الطلب ولا أطلب استردادها.")
+                }
+            }
+        },
+        confirmButton = {
+            Button(enabled = agree, onClick = onOpen) {
+                Text("فتح الطلب وخصم ${(order.technician_fee ?: 0.0).toInt()} جنيه")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("إلغاء") }
+        }
+    )
 }
