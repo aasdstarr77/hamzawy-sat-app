@@ -633,4 +633,411 @@ fun TechnicianLogin(
                             } else {
 
                                 val user = withContext(Dispatchers.IO) {
-                                    Api
+    ApiClient.login(
+        phone,
+        password
+    )
+}
+
+ApiClient.currentUser = user
+
+if (!user.approved) {
+    message = "الحساب لسه مستني موافقة الأدمن."
+} else {
+    onLoggedIn(user)
+}
+
+} catch (e: Exception) {
+    message = e.message ?: "حدث خطأ أثناء تسجيل الدخول"
+} finally {
+    busy = false
+}
+}
+},
+modifier = Modifier.fillMaxWidth(),
+enabled =
+    phone.isNotBlank() &&
+    password.isNotBlank() &&
+    !busy
+) {
+    if (busy) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(20.dp)
+        )
+    } else {
+        Text(
+            if (register) {
+                "تسجيل الفني"
+            } else {
+                "دخول"
+            }
+        )
+    }
+}
+
+TextButton(
+    onClick = {
+        register = !register
+        message = null
+    },
+    modifier = Modifier.fillMaxWidth()
+) {
+    Text(
+        if (register) {
+            "عندي حساب بالفعل - تسجيل الدخول"
+        } else {
+            "أنا فني جديد - إنشاء حساب"
+        }
+    )
+}
+}
+}
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TechnicianHome(
+    user: ApiClient.ApiUser,
+    onLogout: () -> Unit
+) {
+    var balance by remember {
+        mutableStateOf(user.balance ?: 0.0)
+    }
+
+    var orders by remember {
+        mutableStateOf<List<ApiClient.OrderDto>>(emptyList())
+    }
+
+    var loading by remember {
+        mutableStateOf(true)
+    }
+
+    var message by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    var opened by remember {
+        mutableStateOf<ApiClient.OpenedOrder?>(null)
+    }
+
+    var selectedOrder by remember {
+        mutableStateOf<ApiClient.OrderDto?>(null)
+    }
+
+    var agree by remember {
+        mutableStateOf(false)
+    }
+
+    val scope = rememberCoroutineScope()
+
+    fun loadData() {
+        scope.launch {
+            loading = true
+
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    ApiClient.technicianOrders()
+                }
+
+                orders = result
+
+                balance = withContext(Dispatchers.IO) {
+                    ApiClient.balance()
+                }
+
+                message = null
+
+            } catch (e: Exception) {
+                message = e.message ?: "تعذر تحميل البيانات"
+            } finally {
+                loading = false
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        loadData()
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("لوحة الفني")
+                },
+                actions = {
+                    TextButton(
+                        onClick = onLogout
+                    ) {
+                        Text(
+                            "خروج",
+                            color = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Navy,
+                    titleContentColor = Color.White
+                )
+            )
+        }
+    ) { padding ->
+
+        LazyColumn(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            "الرصيد المتاح",
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            "${balance.toInt()} جنيه",
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Navy
+                        )
+                    }
+                }
+            }
+
+            item {
+                Text(
+                    "الطلبات المتاحة",
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            if (loading) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+            }
+
+            message?.let { msg ->
+                item {
+                    Text(
+                        msg,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+
+            if (!loading && orders.isEmpty()) {
+                item {
+                    Text(
+                        "لا توجد طلبات متاحة حاليًا.",
+                        color = Color.Gray
+                    )
+                }
+            }
+
+            items(orders) { order ->
+
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(7.dp)
+                    ) {
+
+                        Text(
+                            order.service,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Text(
+                            "المنطقة: ${order.area ?: "-"}"
+                        )
+
+                        Text(
+                            "السعر المتفق عليه: ${order.customer_price.toInt()} جنيه"
+                        )
+
+                        Text(
+                            "خصم فتح الطلب: ${order.technician_fee.toInt()} جنيه",
+                            color = MaterialTheme.colorScheme.error
+                        )
+
+                        Spacer(
+                            modifier = Modifier.height(4.dp)
+                        )
+
+                        Button(
+                            onClick = {
+                                selectedOrder = order
+                                agree = false
+                                message = null
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                "فتح الطلب وخصم ${order.technician_fee.toInt()} جنيه"
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (opened != null) {
+                item {
+                    val o = opened!!
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+
+                            Text(
+                                "تم فتح الطلب #${o.order_id}",
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text(
+                                "العميل: ${o.customer_name}"
+                            )
+
+                            Text(
+                                "الهاتف: ${o.customer_phone}"
+                            )
+
+                            Text(
+                                "الخدمة: ${o.service}"
+                            )
+
+                            Text(
+                                "المنطقة: ${o.area ?: "-"}"
+                            )
+
+                            Text(
+                                "السعر المتفق عليه: ${o.customer_price.toInt()} جنيه"
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    selectedOrder?.let { order ->
+
+        AlertDialog(
+            onDismissRequest = {
+                selectedOrder = null
+            },
+
+            title = {
+                Text("تنبيه مهم")
+            },
+
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+
+                    Text(
+                        "برجاء التأكد من تفاصيل الطلب وسعر الخدمة والخصم قبل فتح الطلب."
+                    )
+
+                    Text(
+                        "بمجرد الضغط على «فتح الطلب وخصم الرصيد» وخصم الرصيد، لا يجوز طلب استرداد أو رد قيمة الخصم.",
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Checkbox(
+                            checked = agree,
+                            onCheckedChange = {
+                                agree = it
+                            }
+                        )
+
+                        Text(
+                            "أوافق على خصم قيمة فتح الطلب ولا أطلب استردادها."
+                        )
+                    }
+                }
+            },
+
+            confirmButton = {
+
+                Button(
+                    enabled = agree,
+                    onClick = {
+
+                        scope.launch {
+
+                            try {
+
+                                val result = withContext(Dispatchers.IO) {
+                                    ApiClient.openOrder(order.id)
+                                }
+
+                                opened = result
+
+                                balance = withContext(Dispatchers.IO) {
+                                    ApiClient.balance()
+                                }
+
+                                orders = withContext(Dispatchers.IO) {
+                                    ApiClient.technicianOrders()
+                                }
+
+                                selectedOrder = null
+
+                                message = "تم فتح الطلب وخصم الرصيد بنجاح."
+
+                            } catch (e: Exception) {
+
+                                message =
+                                    e.message ?: "تعذر فتح الطلب."
+                            }
+                        }
+                    }
+                ) {
+                    Text(
+                        "فتح الطلب وخصم ${order.technician_fee.toInt()} جنيه"
+                    )
+                }
+            },
+
+            dismissButton = {
+
+                TextButton(
+                    onClick = {
+                        selectedOrder = null
+                    }
+                ) {
+                    Text("إلغاء")
+                }
+            }
+        )
+    }
+}
