@@ -295,20 +295,24 @@ fun TechnicianHome(user: ApiClient.ApiUser, onLogout: () -> Unit) {
                     }
                 }
             }
-            opened?.let { o ->
-                item {
-                    Card(Modifier.fillMaxWidth()) {
-                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text("تم فتح الطلب #${o.order_id}", fontWeight = FontWeight.Bold)
-                            Text("العميل: ${o.customer_name}")
-                            Text("الهاتف: ${o.customer_phone}")
-                            Text("الخدمة: ${o.service}")
-                            Text("المنطقة: ${o.area ?: "-"}")
-                            Text("السعر المتفق عليه: ${o.customer_price.toInt()} جنيه")
-                        }
-                    }
-                }
+            if (opened != null) {
+    item {
+        val o = opened!!
+        Card(Modifier.fillMaxWidth()) {
+            Column(
+                Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    "تم فتح الطلب #${o.order_id}",
+                    fontWeight = FontWeight.Bold
+                )
+                Text("العميل: ${o.customer_name}")
+                Text("الهاتف: ${o.customer_phone}")
+                Text("الخدمة: ${o.service}")
+                Text("المنطقة: ${o.area ?: "-"}")
+                Text("السعر المتفق عليه: ${o.customer_price.toInt()} جنيه")
             }
         }
     }
-}
+            }
