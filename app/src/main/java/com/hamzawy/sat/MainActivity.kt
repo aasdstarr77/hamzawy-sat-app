@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.hamzawy.sat
 
 import android.os.Bundle
@@ -8,8 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -498,42 +496,21 @@ fun TechnicianLogin(
     onBack: () -> Unit,
     onLoggedIn: (ApiClient.ApiUser) -> Unit
 ) {
-    var phone by remember {
-        mutableStateOf("")
-    }
-
-    var password by remember {
-        mutableStateOf("")
-    }
-
-    var name by remember {
-        mutableStateOf("")
-    }
-
-    var register by remember {
-        mutableStateOf(false)
-    }
-
-    var busy by remember {
-        mutableStateOf(false)
-    }
-
-    var message by remember {
-        mutableStateOf<String?>(null)
-    }
+    var phone by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
+    var register by remember { mutableStateOf(false) }
+    var busy by remember { mutableStateOf(false) }
+    var message by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text("منطقة الفنيين")
-                },
+                title = { Text("منطقة الفنيين") },
                 navigationIcon = {
-                    TextButton(
-                        onClick = onBack
-                    ) {
+                    TextButton(onClick = onBack) {
                         Text("رجوع")
                     }
                 },
@@ -544,7 +521,6 @@ fun TechnicianLogin(
             )
         }
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -552,13 +528,8 @@ fun TechnicianLogin(
                 .padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
             Text(
-                if (register) {
-                    "تسجيل فني جديد"
-                } else {
-                    "تسجيل دخول الفني"
-                },
+                text = if (register) "تسجيل فني جديد" else "تسجيل دخول الفني",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -571,42 +542,30 @@ fun TechnicianLogin(
             if (register) {
                 OutlinedTextField(
                     value = name,
-                    onValueChange = {
-                        name = it
-                    },
-                    label = {
-                        Text("الاسم")
-                    },
+                    onValueChange = { name = it },
+                    label = { Text("الاسم") },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
 
             OutlinedTextField(
                 value = phone,
-                onValueChange = {
-                    phone = it
-                },
-                label = {
-                    Text("رقم الهاتف")
-                },
+                onValueChange = { phone = it },
+                label = { Text("رقم الهاتف") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = password,
-                onValueChange = {
-                    password = it
-                },
-                label = {
-                    Text("كلمة المرور")
-                },
+                onValueChange = { password = it },
+                label = { Text("كلمة المرور") },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            message?.let {
+            message?.let { msg ->
                 Text(
-                    it,
-                    color = if (it.contains("تم")) {
+                    text = msg,
+                    color = if (msg.contains("تم")) {
                         Color(0xFF18794E)
                     } else {
                         MaterialTheme.colorScheme.error
@@ -617,84 +576,71 @@ fun TechnicianLogin(
             Button(
                 onClick = {
                     busy = true
-
                     scope.launch {
                         try {
-
                             if (register) {
-
                                 message = withContext(Dispatchers.IO) {
                                     ApiClient.registerTechnician(
-                                        name,
-                                        phone,
-                                        password
+                                        name = name,
+                                        phone = phone,
+                                        password = password
+                                    )
+                                }
+                                register = false
+                            } else {
+                                val user = withContext(Dispatchers.IO) {
+                                    ApiClient.login(
+                                        phone = phone,
+                                        password = password
                                     )
                                 }
 
-                                register = false
+                                ApiClient.currentUser = user
 
-                            } else {
-
-                                val user = withContext(Dispatchers.IO) {
-    ApiClient.login(
-        phone,
-        password
-    )
-}
-
-ApiClient.currentUser = user
-
-if (!user.approved) {
-    message = "الحساب لسه مستني موافقة الأدمن."
-} else {
-    onLoggedIn(user)
-}
-
-} catch (e: Exception) {
-    message = e.message ?: "حدث خطأ أثناء تسجيل الدخول"
-} finally {
-    busy = false
-}
-}
-},
-modifier = Modifier.fillMaxWidth(),
-enabled =
-    phone.isNotBlank() &&
-    password.isNotBlank() &&
-    !busy
-) {
-    if (busy) {
-        CircularProgressIndicator(
-            modifier = Modifier.size(20.dp)
-        )
-    } else {
-        Text(
-            if (register) {
-                "تسجيل الفني"
-            } else {
-                "دخول"
+                                if (!user.approved) {
+                                    message = "الحساب لسه مستني موافقة الأدمن."
+                                } else {
+                                    onLoggedIn(user)
+                                }
+                            }
+                        } catch (e: Exception) {
+                            message = e.message ?: "حدث خطأ أثناء تسجيل الدخول"
+                        } finally {
+                            busy = false
+                        }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = phone.isNotBlank() &&
+                    password.isNotBlank() &&
+                    !busy
+            ) {
+                if (busy) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp)
+                    )
+                } else {
+                    Text(if (register) "تسجيل الفني" else "دخول")
+                }
             }
-        )
-    }
-}
 
-TextButton(
-    onClick = {
-        register = !register
-        message = null
-    },
-    modifier = Modifier.fillMaxWidth()
-) {
-    Text(
-        if (register) {
-            "عندي حساب بالفعل - تسجيل الدخول"
-        } else {
-            "أنا فني جديد - إنشاء حساب"
+            TextButton(
+                onClick = {
+                    register = !register
+                    message = null
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    if (register) {
+                        "عندي حساب بالفعل - تسجيل الدخول"
+                    } else {
+                        "أنا فني جديد - إنشاء حساب"
+                    }
+                )
+            }
         }
-    )
-}
-}
-}
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
