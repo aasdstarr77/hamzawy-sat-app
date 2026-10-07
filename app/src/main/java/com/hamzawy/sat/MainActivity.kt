@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.hamzawy.sat
 
 import android.os.Bundle
@@ -7,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -872,11 +875,11 @@ fun TechnicianHome(
                         )
 
                         Text(
-                            "السعر المتفق عليه: ${order.customer_price.toInt()} جنيه"
+                            "السعر المتفق عليه: ${(order.customer_price ?: 0.0).toInt()} جنيه"
                         )
 
                         Text(
-                            "خصم فتح الطلب: ${order.technician_fee.toInt()} جنيه",
+                            "خصم فتح الطلب: ${(order.technician_fee ?: 0.0).toInt()} جنيه",
                             color = MaterialTheme.colorScheme.error
                         )
 
@@ -893,7 +896,7 @@ fun TechnicianHome(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                "فتح الطلب وخصم ${order.technician_fee.toInt()} جنيه"
+                                "فتح الطلب وخصم ${(order.technician_fee ?: 0.0).toInt()} جنيه"
                             )
                         }
                     }
@@ -1023,7 +1026,7 @@ fun TechnicianHome(
                     }
                 ) {
                     Text(
-                        "فتح الطلب وخصم ${order.technician_fee.toInt()} جنيه"
+                        "فتح الطلب وخصم ${(order.technician_fee ?: 0.0).toInt()} جنيه"
                     )
                 }
             },
