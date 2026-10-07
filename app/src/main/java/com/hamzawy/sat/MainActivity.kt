@@ -7,7 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,19 +34,14 @@ data class Service(
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            HamzawySatApp()
-        }
+        setContent { HamzawySatApp() }
     }
 }
 
 @Composable
 fun HamzawySatApp() {
     MaterialTheme(
-        colorScheme = lightColorScheme(
-            primary = Navy,
-            secondary = Yellow
-        )
+        colorScheme = lightColorScheme(primary = Navy, secondary = Yellow)
     ) {
         CompositionLocalProvider(
             androidx.compose.ui.platform.LocalLayoutDirection provides LayoutDirection.Rtl
@@ -63,24 +57,15 @@ fun AppRouter() {
     var selected by remember { mutableStateOf<Service?>(null) }
 
     when (mode) {
-
         "tech" -> TechnicianLogin(
-            onBack = {
-                mode = "home"
-            },
-            onLoggedIn = {
-                mode = "techHome"
-            }
+            onBack = { mode = "home" },
+            onLoggedIn = { mode = "techHome" }
         )
 
         "techHome" -> TechnicianHome(
-            user = ApiClient.currentUser
-                ?: ApiClient.ApiUser(
-                    0,
-                    "الفني",
-                    "",
-                    "technician"
-                ),
+            user = ApiClient.currentUser ?: ApiClient.ApiUser(
+                0, "الفني", "", "technician"
+            ),
             onLogout = {
                 ApiClient.token = null
                 ApiClient.currentUser = null
@@ -91,19 +76,13 @@ fun AppRouter() {
         "request" -> selected?.let { service ->
             ServiceRequestScreen(
                 service = service,
-                onBack = {
-                    mode = "home"
-                },
-                onSubmitted = {
-                    mode = "home"
-                }
+                onBack = { mode = "home" },
+                onSubmitted = { mode = "home" }
             )
         }
 
         else -> HomeScreen(
-            onTechnician = {
-                mode = "tech"
-            },
+            onTechnician = { mode = "tech" },
             onService = {
                 selected = it
                 mode = "request"
@@ -117,17 +96,9 @@ fun HomeScreen(
     onTechnician: () -> Unit,
     onService: (Service) -> Unit
 ) {
-    var services by remember {
-        mutableStateOf<List<Service>>(emptyList())
-    }
-
-    var loading by remember {
-        mutableStateOf(true)
-    }
-
-    var error by remember {
-        mutableStateOf<String?>(null)
-    }
+    var services by remember { mutableStateOf<List<Service>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+    var error by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
@@ -143,7 +114,6 @@ fun HomeScreen(
             } catch (e: Exception) {
                 error = e.message
             }
-
             loading = false
         }
     }
@@ -153,15 +123,8 @@ fun HomeScreen(
             TopAppBar(
                 title = {
                     Column {
-                        Text(
-                            "حمزاوي سات",
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text(
-                            "خدمات فنية في مكانك",
-                            fontSize = 12.sp
-                        )
+                        Text("حمزاوي سات", fontWeight = FontWeight.Bold)
+                        Text("خدمات فنية في مكانك", fontSize = 12.sp)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -171,7 +134,6 @@ fun HomeScreen(
             )
         }
     ) { padding ->
-
         LazyColumn(
             modifier = Modifier
                 .padding(padding)
@@ -179,7 +141,6 @@ fun HomeScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
             item {
                 Text(
                     "اختار الخدمة اللي محتاجها",
@@ -190,7 +151,7 @@ fun HomeScreen(
                 )
 
                 Text(
-                    "من غير تسجيل أو حساب للعميل",
+                    "اختار الخدمة المناسبة واطلبها بسهولة",
                     color = Color.Gray,
                     fontSize = 13.sp,
                     modifier = Modifier.fillMaxWidth(),
@@ -219,15 +180,11 @@ fun HomeScreen(
             }
 
             items(services) { service ->
-                ServiceCard(service) {
-                    onService(service)
-                }
+                ServiceCard(service) { onService(service) }
             }
 
             item {
-                Spacer(
-                    modifier = Modifier.height(8.dp)
-                )
+                Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedButton(
                     onClick = onTechnician,
@@ -235,18 +192,6 @@ fun HomeScreen(
                 ) {
                     Text("دخول / تسجيل الفني")
                 }
-
-                Spacer(
-                    modifier = Modifier.height(8.dp)
-                )
-
-                Text(
-                    "سعر الخدمة يتم الاتفاق عليه مع العميل ويحدده الأدمن.",
-                    color = Color.Gray,
-                    fontSize = 13.sp,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
             }
         }
     }
@@ -260,9 +205,7 @@ fun ServiceCard(
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFF7F8FA)
-        )
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F8FA))
     ) {
         Row(
             modifier = Modifier
@@ -270,25 +213,16 @@ fun ServiceCard(
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            Text(service.icon, fontSize = 36.sp)
 
-            Text(
-                service.icon,
-                fontSize = 36.sp
-            )
+            Spacer(modifier = Modifier.width(14.dp))
 
-            Spacer(
-                modifier = Modifier.width(14.dp)
-            )
-
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     service.title,
                     fontWeight = FontWeight.Bold,
                     fontSize = 17.sp
                 )
-
                 Text(
                     service.description,
                     color = Color.Gray,
@@ -305,46 +239,24 @@ fun ServiceRequestScreen(
     onBack: () -> Unit,
     onSubmitted: () -> Unit
 ) {
-    var name by remember {
-        mutableStateOf("")
-    }
+    var name by remember { mutableStateOf("") }
+    var phone by remember { mutableStateOf("") }
+    var area by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    var problem by remember { mutableStateOf("") }
 
-    var phone by remember {
-        mutableStateOf("")
-    }
-
-    var area by remember {
-        mutableStateOf("")
-    }
-
-    var address by remember {
-        mutableStateOf("")
-    }
-
-    var problem by remember {
-        mutableStateOf("")
-    }
-
-    var busy by remember {
-        mutableStateOf(false)
-    }
-
-    var message by remember {
-        mutableStateOf<String?>(null)
-    }
+    var busy by remember { mutableStateOf(false) }
+    var submitted by remember { mutableStateOf(false) }
+    var message by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text("طلب خدمة")
-                },
+                title = { Text("طلب خدمة") },
                 navigationIcon = {
-                    TextButton(
-                        onClick = onBack
-                    ) {
+                    TextButton(onClick = onBack, enabled = !busy) {
                         Text("رجوع")
                     }
                 },
@@ -355,7 +267,6 @@ fun ServiceRequestScreen(
             )
         }
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -363,7 +274,6 @@ fun ServiceRequestScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-
             Text(
                 service.title,
                 fontSize = 20.sp,
@@ -371,65 +281,50 @@ fun ServiceRequestScreen(
             )
 
             Text(
-                "مش محتاج تعمل حساب. اكتب بياناتك وإحنا هنتواصل معاك.",
+                "اكتب بياناتك وتفاصيل المشكلة، وهنراجع طلبك ونتواصل معاك.",
                 color = Color.Gray
             )
 
             OutlinedTextField(
                 value = name,
-                onValueChange = {
-                    name = it
-                },
-                label = {
-                    Text("الاسم")
-                },
-                modifier = Modifier.fillMaxWidth()
+                onValueChange = { name = it },
+                label = { Text("الاسم") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !busy && !submitted
             )
 
             OutlinedTextField(
                 value = phone,
-                onValueChange = {
-                    phone = it
-                },
-                label = {
-                    Text("رقم الموبايل")
-                },
-                modifier = Modifier.fillMaxWidth()
+                onValueChange = { phone = it },
+                label = { Text("رقم الموبايل") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !busy && !submitted
             )
 
             OutlinedTextField(
                 value = area,
-                onValueChange = {
-                    area = it
-                },
-                label = {
-                    Text("المنطقة")
-                },
-                modifier = Modifier.fillMaxWidth()
+                onValueChange = { area = it },
+                label = { Text("المنطقة") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !busy && !submitted
             )
 
             OutlinedTextField(
                 value = address,
-                onValueChange = {
-                    address = it
-                },
-                label = {
-                    Text("العنوان بالتفصيل")
-                },
-                modifier = Modifier.fillMaxWidth()
+                onValueChange = { address = it },
+                label = { Text("العنوان بالتفصيل") },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !busy && !submitted
             )
 
             OutlinedTextField(
                 value = problem,
-                onValueChange = {
-                    problem = it
-                },
-                label = {
-                    Text("وصف المشكلة")
-                },
+                onValueChange = { problem = it },
+                label = { Text("وصف المشكلة") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
+                    .height(120.dp),
+                enabled = !busy && !submitted
             )
 
             message?.let {
@@ -445,11 +340,13 @@ fun ServiceRequestScreen(
 
             Button(
                 onClick = {
+                    if (busy || submitted) return@Button
+
                     busy = true
+                    message = null
 
                     scope.launch {
                         try {
-
                             val orderId = withContext(Dispatchers.IO) {
                                 ApiClient.createGuestOrder(
                                     service.id,
@@ -461,11 +358,11 @@ fun ServiceRequestScreen(
                                 )
                             }
 
+                            submitted = true
                             message =
                                 "تم إرسال طلبك بنجاح رقم #$orderId، وهنراجع الطلب ونتواصل معاك لتأكيد السعر."
-
                         } catch (e: Exception) {
-                            message = e.message
+                            message = e.message ?: "تعذر إرسال الطلب."
                         } finally {
                             busy = false
                         }
@@ -477,15 +374,24 @@ fun ServiceRequestScreen(
                     phone.isNotBlank() &&
                     area.isNotBlank() &&
                     address.isNotBlank() &&
-                    !busy
+                    !busy &&
+                    !submitted
             ) {
-
                 if (busy) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(20.dp)
                     )
                 } else {
-                    Text("إرسال طلب الخدمة")
+                    Text(if (submitted) "تم إرسال الطلب" else "إرسال طلب الخدمة")
+                }
+            }
+
+            if (submitted) {
+                OutlinedButton(
+                    onClick = onBack,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("العودة للقائمة الرئيسية")
                 }
             }
         }
@@ -617,9 +523,7 @@ fun TechnicianLogin(
                     !busy
             ) {
                 if (busy) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(20.dp)
-                    )
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp))
                 } else {
                     Text(if (register) "تسجيل الفني" else "دخول")
                 }
@@ -644,59 +548,33 @@ fun TechnicianLogin(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TechnicianHome(
     user: ApiClient.ApiUser,
     onLogout: () -> Unit
 ) {
-    var balance by remember {
-        mutableStateOf(user.balance ?: 0.0)
-    }
-
-    var orders by remember {
-        mutableStateOf<List<ApiClient.OrderDto>>(emptyList())
-    }
-
-    var loading by remember {
-        mutableStateOf(true)
-    }
-
-    var message by remember {
-        mutableStateOf<String?>(null)
-    }
-
-    var opened by remember {
-        mutableStateOf<ApiClient.OpenedOrder?>(null)
-    }
-
-    var selectedOrder by remember {
-        mutableStateOf<ApiClient.OrderDto?>(null)
-    }
-
-    var agree by remember {
-        mutableStateOf(false)
-    }
+    var balance by remember { mutableStateOf(user.balance ?: 0.0) }
+    var orders by remember { mutableStateOf<List<ApiClient.OrderDto>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+    var message by remember { mutableStateOf<String?>(null) }
+    var opened by remember { mutableStateOf<ApiClient.OpenedOrder?>(null) }
+    var selectedOrder by remember { mutableStateOf<ApiClient.OrderDto?>(null) }
+    var agree by remember { mutableStateOf(false) }
+    var opening by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
 
     fun loadData() {
         scope.launch {
             loading = true
-
             try {
-                val result = withContext(Dispatchers.IO) {
+                orders = withContext(Dispatchers.IO) {
                     ApiClient.technicianOrders()
                 }
-
-                orders = result
-
                 balance = withContext(Dispatchers.IO) {
                     ApiClient.balance()
                 }
-
                 message = null
-
             } catch (e: Exception) {
                 message = e.message ?: "تعذر تحميل البيانات"
             } finally {
@@ -712,17 +590,10 @@ fun TechnicianHome(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text("لوحة الفني")
-                },
+                title = { Text("لوحة الفني") },
                 actions = {
-                    TextButton(
-                        onClick = onLogout
-                    ) {
-                        Text(
-                            "خروج",
-                            color = Color.White
-                        )
+                    TextButton(onClick = onLogout) {
+                        Text("خروج", color = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -732,7 +603,6 @@ fun TechnicianHome(
             )
         }
     ) { padding ->
-
         LazyColumn(
             modifier = Modifier
                 .padding(padding)
@@ -740,20 +610,13 @@ fun TechnicianHome(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Card(modifier = Modifier.fillMaxWidth()) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Text(
-                            "الرصيد المتاح",
-                            fontWeight = FontWeight.Bold
-                        )
-
+                        Text("الرصيد المتاح", fontWeight = FontWeight.Bold)
                         Text(
                             "${balance.toInt()} جنيه",
                             fontSize = 26.sp,
@@ -783,10 +646,10 @@ fun TechnicianHome(
                 }
             }
 
-            if (message != null) {
+            message?.let { msg ->
                 item {
                     Text(
-                        message!!,
+                        msg,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -802,24 +665,18 @@ fun TechnicianHome(
             }
 
             items(orders) { order ->
-
-                Card(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Card(modifier = Modifier.fillMaxWidth()) {
                     Column(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(7.dp)
                     ) {
-
                         Text(
                             order.service,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
 
-                        Text(
-                            "المنطقة: ${order.area ?: "-"}"
-                        )
+                        Text("المنطقة: ${order.area ?: "-"}")
 
                         Text(
                             "السعر المتفق عليه: ${(order.customer_price ?: 0.0).toInt()} جنيه"
@@ -830,9 +687,7 @@ fun TechnicianHome(
                             color = MaterialTheme.colorScheme.error
                         )
 
-                        Spacer(
-                            modifier = Modifier.height(4.dp)
-                        )
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         Button(
                             onClick = {
@@ -854,27 +709,18 @@ fun TechnicianHome(
                 item {
                     val o = opened!!
 
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
+                    Card(modifier = Modifier.fillMaxWidth()) {
                         Column(
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-
                             Text(
                                 "تم فتح الطلب #${o.order_id}",
                                 fontWeight = FontWeight.Bold
                             )
 
-                            Text(
-                                "العميل: ${o.customer_name}"
-                            )
-
-                            Text(
-                                "الهاتف: ${o.customer_phone}"
-                            )
-
+                            Text("العميل: ${o.customer_name}")
+                            Text("الهاتف: ${o.customer_phone}")
                             Text(
                                 "السعر المتفق عليه: ${o.customer_price.toInt()} جنيه"
                             )
@@ -890,21 +736,38 @@ fun TechnicianHome(
         TechnicianOrderConfirmDialog(
             order = currentOrder,
             agree = agree,
+            busy = opening,
             onAgreeChange = { agree = it },
-            onDismiss = { selectedOrder = null },
+            onDismiss = {
+                if (!opening) selectedOrder = null
+            },
             onOpen = {
+                if (opening) return@TechnicianOrderConfirmDialog
+
+                opening = true
+
                 scope.launch {
                     try {
                         val result = withContext(Dispatchers.IO) {
                             ApiClient.openOrder(currentOrder.id)
                         }
+
                         opened = result
-                        balance = withContext(Dispatchers.IO) { ApiClient.balance() }
-                        orders = withContext(Dispatchers.IO) { ApiClient.technicianOrders() }
+
+                        balance = withContext(Dispatchers.IO) {
+                            ApiClient.balance()
+                        }
+
+                        orders = withContext(Dispatchers.IO) {
+                            ApiClient.technicianOrders()
+                        }
+
                         selectedOrder = null
                         message = "تم فتح الطلب وخصم الرصيد بنجاح."
                     } catch (e: Exception) {
                         message = e.message ?: "تعذر فتح الطلب."
+                    } finally {
+                        opening = false
                     }
                 }
             }
@@ -912,11 +775,11 @@ fun TechnicianHome(
     }
 }
 
-
 @Composable
 private fun TechnicianOrderConfirmDialog(
     order: ApiClient.OrderDto,
     agree: Boolean,
+    busy: Boolean,
     onAgreeChange: (Boolean) -> Unit,
     onDismiss: () -> Unit,
     onOpen: () -> Unit
@@ -931,19 +794,38 @@ private fun TechnicianOrderConfirmDialog(
                     "بمجرد الضغط على «فتح الطلب وخصم الرصيد» وخصم الرصيد، لا يجوز طلب استرداد أو رد قيمة الخصم.",
                     fontWeight = FontWeight.Bold
                 )
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = agree, onCheckedChange = onAgreeChange)
+                    Checkbox(
+                        checked = agree,
+                        onCheckedChange = { if (!busy) onAgreeChange(it) },
+                        enabled = !busy
+                    )
                     Text("أوافق على خصم قيمة فتح الطلب ولا أطلب استردادها.")
                 }
             }
         },
         confirmButton = {
-            Button(enabled = agree, onClick = onOpen) {
-                Text("فتح الطلب وخصم ${(order.technician_fee ?: 0.0).toInt()} جنيه")
+            Button(
+                enabled = agree && !busy,
+                onClick = onOpen
+            ) {
+                if (busy) {
+                    CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                } else {
+                    Text(
+                        "فتح الطلب وخصم ${(order.technician_fee ?: 0.0).toInt()} جنيه"
+                    )
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("إلغاء") }
+            TextButton(
+                onClick = onDismiss,
+                enabled = !busy
+            ) {
+                Text("إلغاء")
+            }
         }
     )
 }
